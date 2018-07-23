@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorWhite"
+    android:gravity="center_horizontal">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <ImageView
+            android:id="@+id/receiveCloseIv"
+            android:src="@drawable/ic_close_black_24dp"
+            android:padding="8dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp" />
+        <TextView
+            android:text="내 지갑 주소"
+            android:textSize="16sp"
+            android:textColor="#0F0F0F"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:gravity="center"
+            android:layout_centerInParent="true"
+            />
+    </RelativeLayout>
+    <View
+        android:background="#8f818181"
+        android:layout_width="match_parent"
+        android:layout_height="0.75dp"/>
+    <ImageView
+        android:id="@+id/receiveQRCodeIv"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        android:scaleType="fitXY"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="12dp"
+        />
+    <TextView
+        android:id="@+id/receiveAddressTv"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        />
+</LinearLayout>

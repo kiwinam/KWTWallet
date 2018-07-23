@@ -1,0 +1,120 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimaryDark"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    >
+    <RelativeLayout
+        android:id="@+id/chargeToolbarLo"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/colorPrimaryDark"
+        >
+        <ImageView
+            android:id="@+id/chargeBackIv"
+            android:src="@drawable/ic_close_white_24dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="8dp"
+            android:layout_marginStart="4dp"
+            android:layout_centerVertical="true"
+            />
+        <TextView
+            android:text="충전하기"
+            android:textColor="@color/colorWhite"
+            android:textSize="18sp"
+            android:layout_centerInParent="true"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+    <RelativeLayout
+        android:layout_below="@id/chargeToolbarLo"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="16dp"
+        >
+        <TextView
+            android:text="현재 토큰"
+            android:textColor="@color/colorWhite"
+            android:textSize="24sp"
+            android:layout_marginTop="16dp"
+            android:layout_marginStart="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/chargeCurrentValueTv"
+            android:text="3,000 KWT"
+            android:textColor="@color/colorWhite"
+            android:textSize="24sp"
+            android:layout_marginTop="56dp"
+            android:layout_marginStart="24dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <EditText
+            android:id="@+id/chargeValueEt"
+            android:layout_below="@id/chargeCurrentValueTv"
+            android:textColor="@color/colorWhite"
+            android:hint="충전할 토큰 수량"
+            android:inputType="numberDecimal"
+            android:textColorHint="#64ffffff"
+            android:layout_marginTop="48dp"
+            android:layout_marginStart="24dp"
+            android:layout_marginEnd="8dp"
+            android:gravity="end"
+            android:layout_width="240dp"
+            android:layout_height="48dp" />
+        <TextView
+            android:layout_below="@id/chargeCurrentValueTv"
+            android:layout_toEndOf="@id/chargeValueEt"
+            android:layout_marginTop="54dp"
+            android:text="KWT"
+            android:textSize="24sp"
+            android:textColor="@color/colorWhite"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:layout_below="@id/chargeValueEt"
+            android:layout_marginStart="24dp"
+            android:text="="
+            android:gravity="center_vertical|end"
+            android:textColor="@color/colorWhite"
+            android:textSize="32sp"
+            android:layout_width="240dp"
+            android:layout_height="wrap_content" />
+        <TextView
+            android:id="@+id/chargeWonTv"
+            android:text="3,000"
+            android:textColor="@color/colorWhite"
+            android:textSize="24sp"
+            android:layout_marginTop="48dp"
+            android:gravity="center_vertical|end"
+            android:layout_marginStart="24dp"
+            android:layout_below="@id/chargeValueEt"
+            android:layout_width="240dp"
+            android:layout_height="48dp" />
+        <TextView
+            android:text="원"
+            android:textColor="@color/colorWhite"
+            android:textSize="24sp"
+            android:layout_below="@id/chargeValueEt"
+            android:layout_toEndOf="@id/chargeWonTv"
+            android:gravity="center_vertical"
+            android:layout_marginTop="56dp"
+            android:layout_marginStart="8dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </RelativeLayout>
+    <Button
+        android:id="@+id/chargeSubmitBtn"
+        android:text="카카오 페이로 결제하기"
+        android:textColor="@color/colorPrimaryDark"
+        android:background="@drawable/sp_white_round_box"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="48dp"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+</RelativeLayout>

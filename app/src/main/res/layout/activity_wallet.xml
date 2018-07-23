@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:background="@color/colorPrimaryDark"
+            >
+            <ImageView
+                android:id="@+id/walletMenuIv"
+                android:src="@drawable/ic_menu_white_24dp"
+                android:padding="8dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="4dp"
+                android:clickable="true"
+                android:focusable="true"
+                />
+            <TextView
+                android:id="@+id/walletNameTv"
+                android:text="Wallet 1"
+                android:textColor="@color/colorWhite"
+                android:textSize="18sp"
+                android:layout_centerInParent="true"
+                android:visibility="visible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <EditText
+                android:id="@+id/walletNameEt"
+                android:textSize="18sp"
+                android:background="@null"
+                android:layout_centerInParent="true"
+                android:visibility="gone"
+                android:textColor="@color/colorWhite"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <ImageView
+                android:id="@+id/walletNameEditIv"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@id/walletNameTv"
+                android:layout_marginStart="4dp"
+
+                android:src="@drawable/ic_edit_white_24dp"
+                android:padding="8dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp" />
+            <ImageView
+                android:id="@+id/walletNameConfirmIv"
+                android:visibility="gone"
+                android:layout_centerVertical="true"
+                android:layout_toEndOf="@id/walletNameEt"
+                android:layout_marginStart="4dp"
+                android:src="@drawable/ic_check_white_24dp"
+                android:padding="8dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp" />
+            <LinearLayout
+                android:id="@+id/walletAddrLo"
+                android:layout_alignParentBottom="true"
+                android:layout_marginBottom="16dp"
+                android:layout_centerHorizontal="true"
+                android:orientation="horizontal"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:layout_marginTop="4dp"
+                >
+                <TextView
+                    android:id="@+id/walletAddressTv"
+                    android:text="0xbeab5d481jd91221920394"
+                    android:ellipsize="middle"
+                    android:maxWidth="150dp"
+                    android:textColor="@color/colorWhite"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:gravity="center_vertical"
+                    android:singleLine="true" />
+                <ImageView
+                    android:id="@+id/walletAddrCopyIv"
+                    android:src="@drawable/ic_copy_white_24dp"
+                    android:padding="10dp"
+                    android:layout_marginStart="4dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp" />
+            </LinearLayout>
+            <TextView
+                android:id="@+id/walletRefillTv"
+                android:text="충전하기"
+                android:textColor="@color/colorWhite"
+                android:textSize="16sp"
+                android:gravity="center_vertical"
+                android:layout_alignParentEnd="true"
+                android:layout_marginEnd="8dp"
+                android:paddingStart="4dp"
+                android:paddingEnd="4dp"
+                android:layout_width="wrap_content"
+                android:layout_height="56dp" />
+        </RelativeLayout>
+        <RelativeLayout
+            android:id="@+id/walletAccountLo"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:layout_marginTop="150dp"
+            android:background="@color/colorPrimaryDark">
+            <ImageView
+                android:id="@+id/walletRefreshIv"
+                android:src="@drawable/ic_autorenew_white_24dp"
+                android:padding="8dp"
+                android:layout_marginStart="4dp"
+                android:layout_centerVertical="true"
+                android:layout_width="48dp"
+                android:layout_height="48dp" />
+            <TextView
+                android:text="잔액"
+                android:textColor="@color/colorWhite"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="4dp"
+                android:textSize="12sp"
+                android:layout_marginEnd="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+            <TextView
+                android:id="@+id/walletAccountTv"
+                android:textColor="@color/colorWhite"
+                android:textSize="20sp"
+                android:layout_alignParentEnd="true"
+                android:layout_marginTop="24dp"
+                android:layout_marginEnd="16dp"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+
+        </RelativeLayout>
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_below="@id/walletAccountLo"
+            android:layout_above="@id/walletActionLo">
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:id="@+id/walletSwipeLo"
+                android:layout_marginStart="4dp"
+                android:layout_marginEnd="4dp"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/walletTransactionRv"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"/>
+            </android.support.v4.widget.SwipeRefreshLayout>
+            <TextView
+                android:id="@+id/walletNoTransactionTv"
+                android:text="귀하의 트랜잭션이 여기에 표시됩니다."
+                android:layout_centerInParent="true"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </RelativeLayout>
+        <LinearLayout
+            android:id="@+id/walletActionLo"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:background="@drawable/gradient_primary"
+            android:layout_alignParentBottom="true"
+            android:orientation="horizontal"
+            android:weightSum="2"
+            >
+            <Button
+                android:id="@+id/walletSendBtn"
+                android:text="보내기"
+                android:textColor="@color/colorWhite"
+                android:textSize="14sp"
+                android:background="@drawable/sp_alpa_white_round_box"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_margin="8dp"
+                android:layout_height="match_parent" />
+            <Button
+                android:id="@+id/walletReceiveBtn"
+                android:text="받기"
+                android:textColor="@color/colorWhite"
+                android:textSize="14sp"
+                android:background="@drawable/sp_alpa_white_round_box"
+                android:layout_weight="1"
+                android:layout_width="0dp"
+                android:layout_margin="8dp"
+                android:layout_height="match_parent" />
+        </LinearLayout>
+        <com.tuyenmonkey.mkloader.MKLoader
+            android:id="@+id/walletLoader"
+            android:layout_alignParentBottom="true"
+            android:layout_marginBottom="8dp"
+            android:layout_marginStart="88dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:visibility="gone"
+            />
+    </RelativeLayout>
+</android.support.design.widget.CoordinatorLayout>

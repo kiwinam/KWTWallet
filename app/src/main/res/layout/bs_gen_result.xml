@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorWhite"
+    android:gravity="center_horizontal">
+    <TextView
+        android:text="지갑 생성 결과"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:gravity="center"
+        />
+    <View
+        android:background="#8f818181"
+        android:layout_width="match_parent"
+        android:layout_height="0.75dp"/>
+    <TextView
+        android:id="@+id/genResultNameTv"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_height="wrap_content" />
+    <ImageView
+        android:id="@+id/genResultQRCodeIv"
+        android:layout_width="160dp"
+        android:layout_height="160dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        />
+    <TextView
+        android:id="@+id/genResultAddressTv"
+        android:layout_width="wrap_content"
+        android:gravity="center"
+        android:layout_marginBottom="16dp"
+        android:layout_height="wrap_content" />
+    <Button
+        android:id="@+id/genResultConfirmBtn"
+        android:text="확인"
+        android:textColor="@color/colorWhite"
+        android:background="@color/colorPrimary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        />
+</LinearLayout>
