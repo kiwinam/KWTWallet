@@ -8,30 +8,13 @@ import android.support.design.widget.Snackbar
 import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.view.View
-import io.reactivex.Observable
-import io.reactivex.ObservableOnSubscribe
-import io.reactivex.android.schedulers.AndroidSchedulers
-import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_wallet.*
-import org.ethereum.geth.BigInt
-import org.web3j.abi.FunctionEncoder
-import org.web3j.abi.FunctionReturnDecoder
-import org.web3j.abi.TypeReference
-import org.web3j.abi.datatypes.Address
-import org.web3j.abi.datatypes.Type
-import org.web3j.abi.datatypes.generated.Uint256
 import wallet.kiwinam.charlie.kwtwallet.R
 import org.web3j.protocol.core.DefaultBlockParameterName
-import org.web3j.protocol.core.methods.response.EthGetBalance
-import org.web3j.protocol.http.HttpService
 import org.web3j.protocol.Web3j
-import org.web3j.protocol.core.methods.request.Transaction
-import org.web3j.protocol.core.methods.response.EthGetTransactionCount
-import org.web3j.utils.Numeric
 import wallet.kiwinam.charlie.kwtwallet.KeyStoreUtils
-import wallet.kiwinam.charlie.kwtwallet.Web3Service
+import wallet.kiwinam.charlie.kwtwallet.Web3jService
 import wallet.kiwinam.charlie.kwtwallet.contract.KiwiTestToken
-import java.math.BigDecimal
 import java.math.BigInteger
 
 
@@ -105,7 +88,7 @@ class WalletActivity : AppCompatActivity() , View.OnClickListener {
         //val web3 = Web3j.build(HttpService())  // defaults to http://localhost:8545/
 
         // send asynchronous requests to get balance
-        val ethGetBalance = Web3Service.getInstance()
+        val ethGetBalance = Web3jService.getInstance()
                 .ethGetBalance("0x$address", DefaultBlockParameterName.LATEST)
                 .sendAsync()
                 .get()
@@ -114,7 +97,7 @@ class WalletActivity : AppCompatActivity() , View.OnClickListener {
 
         val credential = KeyStoreUtils.getCredentials(address,applicationContext)
 
-        web3j = Web3Service.getInstance()
+        web3j = Web3jService.getInstance()
 
         val gasPrice : BigInteger = BigInteger.valueOf(1)
         val gasLimit : BigInteger = BigInteger.valueOf(3000000)

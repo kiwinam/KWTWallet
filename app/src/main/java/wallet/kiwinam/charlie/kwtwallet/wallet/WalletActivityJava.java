@@ -1,6 +1,7 @@
 package wallet.kiwinam.charlie.kwtwallet.wallet;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Intent;
@@ -20,12 +21,11 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.tuyenmonkey.mkloader.MKLoader;
 
 import org.web3j.protocol.Web3j;
-import org.web3j.protocol.core.DefaultBlockParameter;
-import org.web3j.protocol.core.DefaultBlockParameterName;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
 import java.math.BigInteger;
@@ -37,7 +37,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
 import wallet.kiwinam.charlie.kwtwallet.KeyStoreUtils;
 import wallet.kiwinam.charlie.kwtwallet.R;
-import wallet.kiwinam.charlie.kwtwallet.Web3Service;
+import wallet.kiwinam.charlie.kwtwallet.Web3jService;
 import wallet.kiwinam.charlie.kwtwallet.contract.KiwiTestToken;
 import wallet.kiwinam.charlie.kwtwallet.db.KeyDBHelper;
 import wallet.kiwinam.charlie.kwtwallet.kakaopay.ChargeActivity;
@@ -67,7 +67,6 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
 
     private MKLoader walletLoader;
 
-    private String contractAddress = "0x7FA51E096a26fBa76212c1451Abd28BF90330E07";  // 계약서 주소
     private String name, address;
     private Web3j web3j;
     private KiwiTestToken kiwiToken;
@@ -132,8 +131,9 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
             case R.id.walletRefillTv:   // 충전하기
                 Intent intent = new Intent(getApplicationContext(), ChargeActivity.class);
                 intent.putExtra("token",walletAccountTv.getText().toString());  // 현재 잔액을 가져온다.
-                startActivity(intent);
-                finish();
+                intent.putExtra("address",address);
+                startActivityForResult(intent,3001);
+                //finish();
                 break;
             case R.id.walletNameEditIv: // 지갑 이름 변경
                 walletNameEt.setVisibility(View.VISIBLE);
@@ -210,19 +210,31 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
         }
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if(requestCode == 3001){
+            if(resultCode == Activity.RESULT_OK){
+                Log.d("Wallet add result","OK");
+                requestToken(data.getIntExtra("value",0));
+            }else{
+                Log.d("Wallet add result","NO");
+            }
+        }
+    }
+
     /*
      * 지갑을 초기화하는 메소드
      */
     @SuppressLint("CheckResult")
     private void initWallet(){
         if(web3j == null){
-            web3j = Web3Service.getInstance();
+            web3j = Web3jService.getInstance();
         }
         try{
             Observable.create((ObservableOnSubscribe<KiwiTestToken>) emitter -> {
 
-                KiwiTestToken kiwiToken = new KiwiTestToken(contractAddress,
-                        Web3Service.getInstance(),
+                KiwiTestToken kiwiToken = new KiwiTestToken(KiwiTestToken.CONTRACT_ADDRESS,
+                        Web3jService.getInstance(),
                         KeyStoreUtils.getCredentials(address,getApplicationContext()),
                         BigInteger.valueOf(41),
                         BigInteger.valueOf(3000000));
@@ -279,6 +291,7 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
     private void sendTransaction(String to, Long value){
         Observable
                 .create((ObservableOnSubscribe<TransactionReceipt>) e -> {
+                    //TransactionReceipt send  = kiwiToken.requestToken(address,BigInteger.valueOf(value)).send();
                     TransactionReceipt send  = kiwiToken.transfer(to,BigInteger.valueOf(value)).send();
                     e.onNext(send);
                     e.onComplete();
@@ -297,5 +310,36 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
                         Log.e("transaction NO",  "..");
                     }
                 }, Throwable::printStackTrace);
+    }
+
+    /*
+     * 토큰 오너에게 토큰을 요청하는 메소드
+     */
+    @SuppressLint("CheckResult")
+    public void requestToken(int value){
+        //mkLoader.setVisibility(View.VISIBLE);  // 프로그레스 바를 표시한다.
+
+        Log.d("request address",address);
+        Log.d("request value",value+"..");
+        Observable  // 토큰 요청 시작
+                .create((ObservableOnSubscribe<TransactionReceipt>) e -> {
+                    TransactionReceipt send  = kiwiToken.requestToken(address,BigInteger.valueOf(value)).send();
+                    e.onNext(send);
+                    e.onComplete();
+                })
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(respons -> {
+                    String result = respons.getBlockHash();
+                    if (result != null) {
+                        Log.e("transaction OK", result + "..");
+                        Toast.makeText(getApplicationContext(),"요청이 성공했습니다.",Toast.LENGTH_SHORT).show();
+                    } else {
+                        Log.e("transaction NO",  "..");
+
+                        Toast.makeText(getApplicationContext(),"요청이 실패했습니다.",Toast.LENGTH_SHORT).show();
+                    }
+                }, Throwable::printStackTrace);
+        //mkLoader.setVisibility(View.GONE);  // 프로그레스 바를 숨긴다.
     }
 }
