@@ -44,7 +44,7 @@ class ChargeActivity : AppCompatActivity() {
     private fun setListeners(){
         // 닫기 버튼을 눌렀을 때 Activity 를 종료한다.
         chargeBackIv.setOnClickListener {
-            //startActivity(Intent(applicationContext, WalletActivityJava::class.java))
+            //startActivity(Intent(applicationContext, WalletActivity::class.java))
             finish()
         }
         // 구매하기 버튼

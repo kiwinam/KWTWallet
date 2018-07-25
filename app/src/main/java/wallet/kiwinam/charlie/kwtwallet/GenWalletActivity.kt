@@ -14,7 +14,6 @@ import org.web3j.crypto.WalletUtils
 import org.web3j.utils.Numeric
 import wallet.kiwinam.charlie.kwtwallet.db.KeyDBHelper
 import wallet.kiwinam.charlie.kwtwallet.wallet.WalletActivity
-import wallet.kiwinam.charlie.kwtwallet.wallet.WalletActivityJava
 import java.io.File
 
 /**
@@ -102,7 +101,7 @@ class GenWalletActivity : AppCompatActivity(), View.OnClickListener {
             resultBottomSheet.setKeyData(walletName,address,object : GenFinishListener{
                 // 바텀 시트 종료 후 지갑 액티비티로 이동한다.
                 override fun isFinish() {
-                    val intent = Intent(applicationContext, WalletActivityJava::class.java)
+                    val intent = Intent(applicationContext, WalletActivity::class.java)
                     intent.putExtra("isAutoRun",false)
                     intent.putExtra("name",walletName)
                     intent.putExtra("address",address)

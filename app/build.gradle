@@ -36,6 +36,7 @@ dependencies {
     // QR Code
     implementation 'com.github.kenglxn.QRGen:android:2.5.0'
     implementation 'com.journeyapps:zxing-android-embedded:3.6.0'
+    implementation 'com.google.zxing:core:3.3.2'
     // Confirm circle
     implementation 'com.github.markushi:circlebutton:1.1'
     // web 3j, ethereum

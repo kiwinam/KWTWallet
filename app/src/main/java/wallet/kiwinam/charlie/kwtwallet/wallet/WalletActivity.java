@@ -42,13 +42,14 @@ import wallet.kiwinam.charlie.kwtwallet.contract.KiwiTestToken;
 import wallet.kiwinam.charlie.kwtwallet.db.KeyDBHelper;
 import wallet.kiwinam.charlie.kwtwallet.kakaopay.ChargeActivity;
 
-public class WalletActivityJava extends AppCompatActivity implements View.OnClickListener {
+public class WalletActivity extends AppCompatActivity implements View.OnClickListener {
     // View 객체들
     private TextView walletNameTv;              // 지갑 이름 텍스트 뷰
     private TextView walletAddressTv;           // 지갑 주소 텍스트뷰
     private TextView walletRefillTv;            // 충전하기 텍스트 뷰
     private TextView walletAccountTv;           // 현재 잔액 텍스트뷰
     private TextView walletNoTransactionTv;     // 트랜잭션 표시 텍스트뷰
+    private TextView walletAddTokenTv;          // 토큰 요청 개수 표시 텍스트뷰
 
     private EditText walletNameEt;              // 지갑 이름 바꾸기 EditText
 
@@ -65,12 +66,16 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
     private SwipeRefreshLayout walletSwipeLo;   // 당겨서 새로고침 레이아웃
     private RecyclerView walletTransactionRv;   // 트랜잭션 RecyclerView
 
-    private MKLoader walletLoader;
-
+    private MKLoader walletLoader;              // 보내기 프로그레스 로더
+    private MKLoader walletValueLoader;         // 토큰 구매 로더
+    private MKLoader walletRefreshLoader;       // 잔액 로더
     private String name, address;
     private Web3j web3j;
     private KiwiTestToken kiwiToken;
+
     private Boolean isInitWallet = false;
+    private Boolean isFirstLoadValue = true;
+
     private DecimalFormat decimalFormat = new DecimalFormat("#,##0");
 
     private Animation rotateAnim;    // 리프레시 회전 애니메이션
@@ -89,8 +94,9 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
             address = getIntent().getStringExtra("address");
         }
 
-        initWallet();   // 지갑을 초기화한다.
         bindViews();    // View 와 객체를 연결한다.
+        walletRefreshLoader.setVisibility(View.VISIBLE);    // 처음 한 번만 보여지는 로더
+        initWallet();   // 지갑을 초기화한다.
         rotateAnim = AnimationUtils.loadAnimation(getApplicationContext(),R.anim.anim_rotate);
         keyDBHelper = new KeyDBHelper(getApplicationContext(),"keyList",null,1);
         keyDBHelper.keyDB();
@@ -116,6 +122,9 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
         walletNameEt = findViewById(R.id.walletNameEt);
         walletNameConfirmIv = findViewById(R.id.walletNameConfirmIv);
         walletLoader = findViewById(R.id.walletLoader);
+        walletRefreshLoader = findViewById(R.id.walletRefreshLoader);
+        walletValueLoader = findViewById(R.id.walletValueLoader);
+        walletAddTokenTv = findViewById(R.id.walletAddTokenTv);
 
         walletNameTv.setText(name);
         walletNameEt.setText(name);
@@ -260,12 +269,11 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
      */
     @SuppressLint({"CheckResult", "SetTextI18n"})
     private void getWalletInfo() {
-
         Observable.create((ObservableOnSubscribe<BigInteger>) e -> {
             Log.d("tokenOwner",address+"..");
             //BigInteger send = kiwiToken.balanceOf("0x"+address).send();
-            BigInteger send = kiwiToken.balanceOf(address).send();
-            e.onNext(send);
+            BigInteger send = kiwiToken.balanceOf(address).send();  // 이더리움 네트워크에 지갑 잔액을 가져오는 메소드를 호출함.
+            e.onNext(send); // balanceOf 메소드 호출이 성공 한다면 send 를 파라미터로 넘겨준다.
             e.onComplete();
         })
                 .subscribeOn(Schedulers.io())
@@ -275,23 +283,30 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
                     Log.d("value",value.toString()+"..");
                     walletAccountTv.setText(decimalFormat.format(value)+" KWT");
                     Snackbar.make(walletReceiveBtn, "지갑을 갱신하였습니다.",Snackbar.LENGTH_SHORT).show();
+                    if(isFirstLoadValue){   // 처음 보여지는 로더를 안보이게한다.
+                        walletRefreshLoader.setVisibility(View.GONE);
+                        walletAccountTv.setVisibility(View.VISIBLE);
+                        isFirstLoadValue = !isFirstLoadValue;
+                    }
                 }, Throwable::printStackTrace);
-
+        // 트랜잭션 리스트를 불러오는 메소드...
+        // 에러 발생으로 주석 처리함. 18.07.24 - 박천명
         /*kiwiToken.transferEventObservable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST).subscribe(tx ->{
            Log.d("to",tx.to);
            Log.d("from",tx.from);
            Log.d("hash",tx.tokens.toString());
-        });*/
+        });
+
+        */
     }
 
     /*
-     *
+     * 전송 트랜잭션
      */
     @SuppressLint("CheckResult")
     private void sendTransaction(String to, Long value){
         Observable
                 .create((ObservableOnSubscribe<TransactionReceipt>) e -> {
-                    //TransactionReceipt send  = kiwiToken.requestToken(address,BigInteger.valueOf(value)).send();
                     TransactionReceipt send  = kiwiToken.transfer(to,BigInteger.valueOf(value)).send();
                     e.onNext(send);
                     e.onComplete();
@@ -315,10 +330,12 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
     /*
      * 토큰 오너에게 토큰을 요청하는 메소드
      */
-    @SuppressLint("CheckResult")
+    @SuppressLint({"CheckResult", "SetTextI18n"})
     public void requestToken(int value){
         //mkLoader.setVisibility(View.VISIBLE);  // 프로그레스 바를 표시한다.
-
+        walletAddTokenTv.setText("+"+decimalFormat.format(value));
+        walletAddTokenTv.setVisibility(View.VISIBLE);
+        walletValueLoader.setVisibility(View.VISIBLE);
         Log.d("request address",address);
         Log.d("request value",value+"..");
         Observable  // 토큰 요청 시작
@@ -334,11 +351,14 @@ public class WalletActivityJava extends AppCompatActivity implements View.OnClic
                     if (result != null) {
                         Log.e("transaction OK", result + "..");
                         Toast.makeText(getApplicationContext(),"요청이 성공했습니다.",Toast.LENGTH_SHORT).show();
+                        getWalletInfo();
                     } else {
                         Log.e("transaction NO",  "..");
 
                         Toast.makeText(getApplicationContext(),"요청이 실패했습니다.",Toast.LENGTH_SHORT).show();
                     }
+                    walletAddTokenTv.setVisibility(View.GONE);
+                    walletValueLoader.setVisibility(View.GONE);
                 }, Throwable::printStackTrace);
         //mkLoader.setVisibility(View.GONE);  // 프로그레스 바를 숨긴다.
     }

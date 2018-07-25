@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.os.Handler
 import android.support.v7.app.AppCompatActivity
 import wallet.kiwinam.charlie.kwtwallet.wallet.WalletActivity
-import wallet.kiwinam.charlie.kwtwallet.wallet.WalletActivityJava
 
 class SplashActivity : AppCompatActivity() {
     private var mDelayHandler : Handler? = null
@@ -18,7 +17,7 @@ class SplashActivity : AppCompatActivity() {
         val nextIntent =
                 if(prefs!!.getString("name","none") != "none"){
                     //Intent(applicationContext, WalletActivity::class.java)
-                    Intent(applicationContext, WalletActivityJava::class.java)
+                    Intent(applicationContext, WalletActivity::class.java)
                 }else{
                     Intent(applicationContext, MainActivity::class.java)
                 }
