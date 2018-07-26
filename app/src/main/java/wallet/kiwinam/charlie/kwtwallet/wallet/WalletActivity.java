@@ -12,6 +12,7 @@ import android.support.design.widget.Snackbar;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
@@ -30,10 +31,17 @@ import com.tuyenmonkey.mkloader.MKLoader;
 
 import org.jetbrains.annotations.NotNull;
 import org.web3j.protocol.Web3j;
+import org.web3j.protocol.core.DefaultBlockParameterName;
+import org.web3j.protocol.core.methods.request.EthFilter;
+import org.web3j.protocol.core.methods.response.EthLog;
+import org.web3j.protocol.core.methods.response.Transaction;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.List;
 
 import io.reactivex.Observable;
 import io.reactivex.ObservableOnSubscribe;
@@ -45,6 +53,7 @@ import wallet.kiwinam.charlie.kwtwallet.Web3jService;
 import wallet.kiwinam.charlie.kwtwallet.contract.KiwiTestToken;
 import wallet.kiwinam.charlie.kwtwallet.db.KeyDBHelper;
 import wallet.kiwinam.charlie.kwtwallet.kakaopay.ChargeActivity;
+import wallet.kiwinam.charlie.kwtwallet.wallet.transaction.TransactionAdapter;
 
 public class WalletActivity extends AppCompatActivity implements View.OnClickListener {
     // View 객체들
@@ -70,9 +79,13 @@ public class WalletActivity extends AppCompatActivity implements View.OnClickLis
     private SwipeRefreshLayout walletSwipeLo;   // 당겨서 새로고침 레이아웃
     private RecyclerView walletTransactionRv;   // 트랜잭션 RecyclerView
 
+    private TransactionAdapter adapter;         // 트랜잭션 어댑터
+    private ArrayList<wallet.kiwinam.charlie.kwtwallet.wallet.transaction.Transaction> transactionList;
+
     private MKLoader walletLoader;              // 보내기 프로그레스 로더
     private MKLoader walletValueLoader;         // 토큰 구매 로더
     private MKLoader walletRefreshLoader;       // 잔액 로더
+
     private String name, address;
     private Web3j web3j;
     private KiwiTestToken kiwiToken;
@@ -133,7 +146,23 @@ public class WalletActivity extends AppCompatActivity implements View.OnClickLis
         walletNameTv.setText(name);
         walletNameEt.setText(name);
         walletAddressTv.setText(address);
+        setRecyclerView();
         setClickListeners();
+    }
+
+    /*
+     * 트랜잭션 RecyclerView 를 설정한다.
+     */
+    private void setRecyclerView(){
+        transactionList = new ArrayList<>();
+        adapter = new TransactionAdapter(transactionList,getApplicationContext());
+
+        walletTransactionRv.setAdapter(adapter);
+        walletTransactionRv.setLayoutManager(new LinearLayoutManager(getApplicationContext()));
+
+        walletSwipeLo.setOnRefreshListener(this::getTransactionLogs);
+
+        //getTransactionLogs();
     }
 
     @Override
@@ -231,13 +260,18 @@ public class WalletActivity extends AppCompatActivity implements View.OnClickLis
                 Log.d("Scan result","content is null");
             }else{
                 Log.d("Scan result","Scanned"+result.getContents());
-                String targetAddress = result.getContents();
-                runSendBs(targetAddress);
+                String targetAddress = result.getContents();    // QR 코드에서 읽어온 결과 값을 주소에 저장한다.
+                runSendBs(targetAddress);   // 보내기 바텀시트를 시작한다.
             }
         }
 
     }
 
+    /*
+     * 보내기 바텀 시트를 실행하는 메소드
+     *
+     * QR CODE 스캔 후 주소를 추가하는 경우와 보내기 버튼을 클릭해서 실행하는 경우로 나뉜다.
+     */
     private void runSendBs(String targetAddress){
         SendBottomSheet sendBottomSheet = SendBottomSheet.Companion.newInstance();
         sendBottomSheet.setCallback(new SendCallback() {
@@ -300,6 +334,7 @@ public class WalletActivity extends AppCompatActivity implements View.OnClickLis
                         Log.d("Contract","OK");
                         isInitWallet = true;    // 지갑 초기화가 완료 되면 true 를 저장한다.
                         getWalletInfo();    //  지갑 정보를 가져온다.
+                        getTransactionLogs();     // 트랜잭션 리스트를 가져온다.
                     }, Throwable::printStackTrace);
         }catch (Exception e){
             e.printStackTrace();
@@ -331,15 +366,69 @@ public class WalletActivity extends AppCompatActivity implements View.OnClickLis
                         isFirstLoadValue = !isFirstLoadValue;
                     }
                 }, Throwable::printStackTrace);
-        // 트랜잭션 리스트를 불러오는 메소드...
-        // 에러 발생으로 주석 처리함. 18.07.24 - 박천명
-        /*kiwiToken.transferEventObservable(DefaultBlockParameterName.EARLIEST, DefaultBlockParameterName.LATEST).subscribe(tx ->{
-           Log.d("to",tx.to);
-           Log.d("from",tx.from);
-           Log.d("hash",tx.tokens.toString());
-        });
+    }
 
-        */
+    /*
+     * 현재 지갑 주소와 연관된 트랜잭션 로그를 가져오는 메소드
+     */
+    private void getTransactionLogs(){
+        new Thread(){
+            @Override
+            public void run() {
+                transactionList.clear();
+                EthFilter filter = new EthFilter(DefaultBlockParameterName.EARLIEST,
+                        DefaultBlockParameterName.LATEST, KiwiTestToken.CONTRACT_ADDRESS);
+                try {
+                    List<EthLog.LogResult> list =  web3j.ethGetLogs(filter).send().getResult();
+                    for(EthLog.LogResult logResult : list){
+                        String fullLog = logResult.get().toString();
+                        String logSplit[] = fullLog.split("',");
+                        String hash = logSplit[2].replace(" transactionHash='","");
+                        Long quantity = Long.parseLong(logSplit[6].replace("data='","").replace("0x","").replace(" ",""),16);
+
+                        String topics[] = logSplit[8].replace("topics=[","").replace("]}","").split(", ");
+
+                        String from = "0x"+topics[1].substring(26);
+                        String to = "0x"+topics[2].substring(26);
+                        if(address.equals(from)){   // 내가 보낸 트랜잭션, State = 0
+                            transactionList.add(0,new wallet.kiwinam.charlie.kwtwallet.wallet.transaction.Transaction(
+                                    hash,
+                                    from,
+                                    to,
+                                    quantity,
+                                    0
+                            ));
+                        }else if(KiwiTestToken.OWNER_ADDRESS.equals(from) && address.equals(to)){ // 내가 구매 요청한 트랜잭션 , State = 2
+                            transactionList.add(0,new wallet.kiwinam.charlie.kwtwallet.wallet.transaction.Transaction(
+                                    hash,
+                                    from,
+                                    to,
+                                    quantity,
+                                    2
+                            ));
+                        }else if(address.equals(to)){   // 내가 받은 트랜잭션 , State = 1
+                            transactionList.add(0,new wallet.kiwinam.charlie.kwtwallet.wallet.transaction.Transaction(
+                                    hash,
+                                    from,
+                                    to,
+                                    quantity,
+                                    1
+                            ));
+                        }
+                    }
+                    runOnUiThread(()->{
+                            adapter.setTransactionList(transactionList);
+                            walletSwipeLo.setRefreshing(false);
+                            if(transactionList.size() > 0)
+                                walletNoTransactionTv.setVisibility(View.GONE);
+                            else
+                                walletNoTransactionTv.setVisibility(View.VISIBLE);
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }.start();
     }
 
     /*
