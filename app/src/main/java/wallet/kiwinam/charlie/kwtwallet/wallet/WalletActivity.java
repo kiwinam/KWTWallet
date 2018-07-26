@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.Snackbar;
+import android.support.v4.app.FragmentTransaction;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.RecyclerView;
@@ -23,8 +24,11 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.zxing.integration.android.IntentIntegrator;
+import com.google.zxing.integration.android.IntentResult;
 import com.tuyenmonkey.mkloader.MKLoader;
 
+import org.jetbrains.annotations.NotNull;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.TransactionReceipt;
 
@@ -169,16 +173,7 @@ public class WalletActivity extends AppCompatActivity implements View.OnClickLis
                 walletNameEditIv.setVisibility(View.VISIBLE );  // 변경 버튼 보이기
                 break;
             case R.id.walletSendBtn:    // 보내기 버튼
-                SendBottomSheet sendBottomSheet = SendBottomSheet.Companion.newInstance();
-                sendBottomSheet.setCallback((address, value) -> {   // 보내기 버튼이 눌러졌을 때 실행되는 콜백 메소드
-                    Log.d("target",address);
-                    Log.d("value",".."+value);
-                    walletLoader.setVisibility(View.VISIBLE);
-                    walletSendBtn.setVisibility(View.INVISIBLE);
-                    Snackbar.make(walletReceiveBtn, "전송 요청하였습니다.",Snackbar.LENGTH_SHORT).show();
-                    sendTransaction(address, (long) value);
-                });
-                sendBottomSheet.show(getSupportFragmentManager(),"send");
+                runSendBs("");
                 break;
             case R.id.walletReceiveBtn: // 받기 버튼
                 ReceiveBottomSheet receiveBottomSheet = new ReceiveBottomSheet();
@@ -228,6 +223,53 @@ public class WalletActivity extends AppCompatActivity implements View.OnClickLis
             }else{
                 Log.d("Wallet add result","NO");
             }
+        }
+        if(requestCode == 5000){
+            Log.d("Scan result","request code 5000");
+            IntentResult result = IntentIntegrator.parseActivityResult(resultCode,data);
+            if(result.getContents() == null){
+                Log.d("Scan result","content is null");
+            }else{
+                Log.d("Scan result","Scanned"+result.getContents());
+                String targetAddress = result.getContents();
+                runSendBs(targetAddress);
+            }
+        }
+
+    }
+
+    private void runSendBs(String targetAddress){
+        SendBottomSheet sendBottomSheet = SendBottomSheet.Companion.newInstance();
+        sendBottomSheet.setCallback(new SendCallback() {
+            @Override
+            public void sendTo(@NotNull String address, int value) {
+                Log.d("target",address);
+                Log.d("value",".."+value);
+                walletLoader.setVisibility(View.VISIBLE);
+                walletSendBtn.setVisibility(View.INVISIBLE);
+                Snackbar.make(walletReceiveBtn, "전송 요청하였습니다.",Snackbar.LENGTH_SHORT).show();
+                sendTransaction(address, (long) value);
+            }
+
+            @Override
+            public void scan() {
+                IntentIntegrator integrator = new IntentIntegrator(WalletActivity.this);
+                integrator.setDesiredBarcodeFormats(IntentIntegrator.ALL_CODE_TYPES);
+                integrator.setCameraId(0);
+                integrator.setBeepEnabled(false);
+                integrator.setOrientationLocked(false);
+                integrator.setPrompt("Scan");
+                integrator.setRequestCode(5000);
+                integrator.initiateScan();
+            }
+        });
+        if(!"".equals(targetAddress)){
+            sendBottomSheet.setAddress(targetAddress);
+            @SuppressLint("CommitTransaction") FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.add(sendBottomSheet,"Send");
+            ft.commitAllowingStateLoss();
+        }else{
+            sendBottomSheet.show(WalletActivity.this.getSupportFragmentManager(), "send");
         }
     }
 

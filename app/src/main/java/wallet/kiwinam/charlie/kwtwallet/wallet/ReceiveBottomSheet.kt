@@ -19,7 +19,7 @@ class ReceiveBottomSheet : BottomSheetDialogFragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         receiveAddressTv.text = address
-        val addressQRCodeBitmap = QRCode.from("www.example.org").bitmap()
+        val addressQRCodeBitmap = QRCode.from(address).bitmap()
         receiveQRCodeIv.setImageBitmap(addressQRCodeBitmap)
 
         receiveCloseIv.setOnClickListener { dismiss() }
@@ -27,6 +27,6 @@ class ReceiveBottomSheet : BottomSheetDialogFragment() {
     }
 
     fun setAddress(address : String){
-        this.address = "0x$address"
+        this.address = address
     }
 }
